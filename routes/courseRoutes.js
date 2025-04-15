@@ -32,7 +32,7 @@ courseRouter.patch('/status/:id', authenticate, authorize('Admin', 'Instructor')
 courseRouter.get('/enrolled/:courseId', authenticate, authorize('Admin', 'Instructor'), courseController.viewEnrolledUsers);
 
 //  POST /api/courses/add
-courseRouter.post('/add', authorize('Admin', 'Instructor'), courseController.addNewCourse);
+courseRouter.post('/add', authenticate, authorize('Admin', 'Instructor'), courseController.addNewCourse);
 
 //  POST /api/courses/approve/:id
 courseRouter.post('/approve/:id', authenticate, authorize('Admin'), courseController.approveCourses);

@@ -212,11 +212,16 @@ const editCurrentUser = async (req, res) => {
 
   const deleteUsers = async (req, res) => {
     try {
+      if (req.user.role !== 'Admin') {
+        return res.status(403).json({ message: 'Unauthorized action' });
+      }
+
       const { id } = req.params;
       const deletedUser = await Profile.findByIdAndDelete(id);
       if (!deletedUser) {
           return res.status(404).json({ message: 'User not found' });
       }
+      
       res.json({ message: 'User deleted successfully' });
   } catch (error) {
       res.status(500).json({ error: error.message });
@@ -225,6 +230,10 @@ const editCurrentUser = async (req, res) => {
   
   const updateUsers = async (req, res) => {
     try {
+      if (req.user.role !== 'Admin') {
+        return res.status(403).json({ message: 'Unauthorized action' });
+      }
+
       const { id } = req.params;
       const { firstName, lastName, otherName, headline, bio, email, phoneNumber, language, socialLinks, profileImage, country } = req.body;
 
@@ -237,6 +246,7 @@ const editCurrentUser = async (req, res) => {
       if (!updatedProfile) {
           return res.status(404).json({ message: 'Profile not found' });
       }
+      
       res.json(updatedProfile);
   } catch (error) {
       res.status(500).json({ error: error.message });
@@ -245,6 +255,9 @@ const editCurrentUser = async (req, res) => {
   
   const changeUserRole = async (req, res) => {
     try {
+      if (req.user.role !== 'Admin') {
+        return res.status(403).json({ message: 'Unauthorized action' });
+      }
       const { id } = req.params;
       const { role } = req.body;
 
@@ -261,6 +274,7 @@ const editCurrentUser = async (req, res) => {
       if (!updatedProfile) {
           return res.status(404).json({ message: 'User not found' });
       }
+      
       res.json(updatedProfile);
   } catch (error) {
       res.status(500).json({ error: error.message });
@@ -269,6 +283,10 @@ const editCurrentUser = async (req, res) => {
   
   const disableUsers = async (req, res) => {
     try {
+      if (req.user.role !== 'Admin') {
+        return res.status(403).json({ message: 'Unauthorized action' });
+      }
+
       const { id } = req.params;
       const { disabled } = req.body;
 
@@ -281,6 +299,7 @@ const editCurrentUser = async (req, res) => {
       if (!updatedProfile) {
           return res.status(404).json({ message: 'User not found' });
       }
+      
       res.json({ message: `User ${disabled ? 'disabled' : 'enabled'} successfully` });
   } catch (error) {
       res.status(500).json({ error: error.message });
