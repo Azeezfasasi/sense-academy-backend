@@ -12,11 +12,14 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow requests from your React app
+  origin: [
+    'https://sense-academy.netlify.app', // Hosted frontend
+    'http://localhost:5173', // Local frontend
+  ],
   credentials: true, // Allow sending cookies, authorization headers, etc.
   allowedHeaders: ['Authorization', 'Content-Type'], // Specify allowed headers
 }));
-app.use(express.json());
+
 
 
 // Routes
