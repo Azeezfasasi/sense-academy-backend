@@ -20,8 +20,6 @@ app.use(cors({
   allowedHeaders: ['Authorization', 'Content-Type'], // Specify allowed headers
 }));
 
-
-
 // Routes
 const profileRoutes = require('./routes/profileRoutes');
 const courseRoutes = require('./routes/courseRoutes');
