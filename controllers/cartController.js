@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Cart = require("../models/Cart");
+const Course = require("../models/Course");
 
 const addToCart = async (req, res) => {
       try {

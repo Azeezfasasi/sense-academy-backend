@@ -7,6 +7,7 @@ const fetchAllCourses = async (req, res) => {
         const courses = await Course.find().populate('createdBy', 'firstName lastName'); // Populate creator's name
         res.json(courses);
     } catch (error) {
+        console.error('Error fetching courses:', error);
         res.status(500).json({ error: error.message });
     }
   };
