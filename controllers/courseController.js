@@ -11,6 +11,36 @@ const fetchAllCourses = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
   };
+
+  const fetchPurchasedCourses = async (req, res) => {
+    try {
+      const userId = req.user.id; // Get the logged-in user's ID from the request
+      const courses = await Course.find({ enrolledUsers: userId }).populate('createdBy', 'firstName lastName'); // Fetch courses where the user is enrolled
+      res.json(courses);
+    } catch (error) {
+      console.error('Error fetching purchased courses:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
+
+  const updatePurchasedCourses = async (req, res) => {
+    try {
+      const userId = req.user.id; // Get the logged-in user's ID
+      const { cartItems } = req.body; // Get the purchased courses from the request body
+  
+      // Update the enrolledUsers field for each purchased course
+      const updatePromises = cartItems.map((item) =>
+        Course.findByIdAndUpdate(item.id, { $addToSet: { enrolledUsers: userId } })
+      );
+  
+      await Promise.all(updatePromises);
+  
+      res.status(200).json({ message: 'Purchased courses updated successfully' });
+    } catch (error) {
+      console.error('Error updating purchased courses:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
   
   const fetchCoursesByInstructor = async (req, res) => {
       try {
@@ -206,4 +236,4 @@ const fetchAllCourses = async (req, res) => {
   };
   
   
-  module.exports = {fetchAllCourses, fetchCoursesByInstructor, addNewCourse, editCourses, editCoursesByInstructor, deleteCourses, deleteCoursesByInstructor, assignCourseToUsers, changeCourseStatus, viewEnrolledUsers, approveCourses, };
+  module.exports = {fetchAllCourses, fetchPurchasedCourses, updatePurchasedCourses, fetchCoursesByInstructor, addNewCourse, editCourses, editCoursesByInstructor, deleteCourses, deleteCoursesByInstructor, assignCourseToUsers, changeCourseStatus, viewEnrolledUsers, approveCourses, };

@@ -29,6 +29,7 @@ const messageRoutes = require('./routes/messageRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const couponRoutes = require('./routes/couponRoutes');
+const paymentRoutes = require("./routes/paymentRoutes");
 
 app.use('/api/profile', profileRoutes);
 app.use('/api/courses', courseRoutes);
@@ -39,6 +40,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGO_URI, {})

@@ -31,57 +31,72 @@ const getAllCoupons = async (req, res) => {
     }
   };
 
-  const applyCoupon = async (req, res) => {
-    try {
-        const { code } = req.body;
-         //  get user id from req.user
-        const userId = req.user.id;
-        const cart = await Cart.findOne({ user: userId }).populate('courses');
-        if (!cart) {
-            return res.status(400).json({ message: 'Cart is empty' });
-        }
-        const coupon = await Coupon.findOne({ code });
-        if (!coupon) {
-            return res.status(404).json({ message: 'Coupon not found' });
-        }
+const applyCoupon = async (req, res) => {
+  try {
+    const { code, cartItems } = req.body; // Get coupon code and cart items from the request body
 
-        if (coupon.expiryDate && coupon.expiryDate < new Date()) {
-            return res.status(400).json({ message: 'Coupon has expired' });
-        }
+    // Log the incoming request for debugging
+    console.log('Applying coupon:', code, 'with cart items:', cartItems);
+    console.log('Request body:', req.body);
+    console.log('Coupon code:', code);
+    console.log('Cart items:', cartItems);
 
-        if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
-            return res.status(400).json({ message: 'Coupon has reached its usage limit' });
-        }
-         // Check if the coupon applies to any of the courses in the cart
-        let applicableCourses = cart.courses.filter(course =>
-            coupon.courses.length === 0 || coupon.courses.some(c => c._id.toString() === course._id.toString())
-        );
-
-        if (applicableCourses.length === 0) {
-             if (coupon.courses.length > 0){
-                return res.status(400).json({ message: 'Coupon is not applicable to any course in your cart' });
-             }
-        }
-        let totalDiscount = 0;
-        applicableCourses.forEach(course => {
-            if (coupon.type === 'Percentage') {
-                totalDiscount += course.regularPrice * (coupon.discount / 100);
-            } else if (coupon.type === 'Fixed') {
-              totalDiscount += coupon.discount;
-            }
-        });
-        coupon.usedCount += 1;
-        await coupon.save();
-        res.json({ message: 'Coupon applied successfully', discount: totalDiscount, cart });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+    // Fetch the coupon
+    const coupon = await Coupon.findOne({ code }); // Ensure code is a string
+    if (!coupon) {
+      return res.status(404).json({ message: 'Coupon not found' });
     }
-}
+
+    // Check if the coupon is active
+    if (!coupon.isActive) {
+      return res.status(400).json({ message: 'Coupon is not active' });
+    }
+
+    // Check if the coupon has expired
+    if (coupon.expiryDate && coupon.expiryDate < new Date()) {
+      return res.status(400).json({ message: 'Coupon has expired' });
+    }
+
+    // Check if the coupon has reached its usage limit
+    if (coupon.usageLimit && coupon.usedCount >= coupon.usageLimit) {
+      return res.status(400).json({ message: 'Coupon usage limit reached' });
+    }
+
+    // Check if the coupon applies to any courses in the cart
+    const applicableCourses = cartItems.filter((item) =>
+      coupon.courses.length === 0 || coupon.courses.some((c) => c.toString() === item._id)
+    );
+
+    if (applicableCourses.length === 0) {
+      return res.status(400).json({ message: 'Coupon is not applicable to any course in your cart' });
+    }
+
+    // Calculate the total discount
+    let totalDiscount = 0;
+    applicableCourses.forEach((course) => {
+      if (coupon.type === 'Percentage') {
+        totalDiscount += course.regularPrice * (coupon.discount / 100);
+      } else if (coupon.type === 'Fixed') {
+        totalDiscount += coupon.discount;
+      }
+    });
+
+    // Increment the coupon's used count
+    coupon.usedCount += 1;
+    await coupon.save();
+
+    // Respond with the discount and applicable courses
+    res.json({ message: 'Coupon applied successfully', discount: totalDiscount, applicableCourses });
+  } catch (error) {
+    console.error('Error applying coupon:', error.message);
+    res.status(500).json({ error: error.message });
+  }
+};
 
 const updateCoupon = async (req, res) => {
   try {
-    const { id } = req.params; // Get the coupon ID from the route parameters
-    const updatedData = req.body; // Get the updated coupon data from the request body
+    const { id } = req.params;
+    const updatedData = req.body;
 
     const updatedCoupon = await Coupon.findByIdAndUpdate(id, updatedData, { new: true }); // Update the coupon
     if (!updatedCoupon) {
@@ -94,18 +109,6 @@ const updateCoupon = async (req, res) => {
   }
 };
   
-  // const deleteCoupon = async (req, res) => {
-  //   try {
-  //       const { code } = req.params;
-  //       const deletedCoupon = await Coupon.findOneAndDelete({ code });
-  //       if (!deletedCoupon) {
-  //           return res.status(404).json({ message: 'Coupon not found' });
-  //       }
-  //       res.json({ message: 'Coupon deleted successfully' });
-  //   } catch (error) {
-  //       res.status(500).json({ error: error.message });
-  //   }
-  // };
   const deleteCoupon = async (req, res) => {
     try {
       const { id } = req.params; // Get the coupon ID from the route parameters

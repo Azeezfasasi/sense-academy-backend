@@ -7,6 +7,12 @@ const authorize = require('../middlewares/roleMiddleware');
 //  GET /api/courses
 courseRouter.get('/', courseController.fetchAllCourses);
 
+// GET /api/courses/purchased
+courseRouter.get('/purchased', authenticate, courseController.fetchPurchasedCourses);
+
+// POST /api/courses/purchase
+courseRouter.post('/purchase', authenticate, courseController.updatePurchasedCourses);
+
 //  GET /api/courses/instructor/:id
 courseRouter.get('/instructor/:id', courseController.fetchCoursesByInstructor);
 
