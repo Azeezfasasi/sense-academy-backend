@@ -7,6 +7,9 @@ const authorize = require("../middlewares/roleMiddleware");
 // POST /api/payments/create - Create a new payment record
 paymentRouter.post("/create", authenticate, paymentController.createPayment);
 
+// PUT /api/payments/update-status
+paymentRouter.put("/update-status", authenticate, authorize("Admin"), paymentController.updatePaymentStatus);
+
 // GET /api/payments/student - Fetch payment history for a student
 paymentRouter.get("/student", authenticate, authorize("Student"), paymentController.fetchStudentPayments);
 

@@ -24,6 +24,33 @@ const createPayment = async (req, res) => {
   }
 };
 
+const updatePaymentStatus = async (req, res) => {
+  try {
+    const { paymentId, paymentStatus } = req.body;
+
+    // Validate payment status
+    if (!["Paid", "Pending"].includes(paymentStatus)) {
+      return res.status(400).json({ error: "Invalid payment status" });
+    }
+
+    // Find and update the payment
+    const payment = await Payment.findByIdAndUpdate(
+      paymentId,
+      { paymentStatus },
+      { new: true } // Return the updated document
+    );
+
+    if (!payment) {
+      return res.status(404).json({ error: "Payment not found" });
+    }
+
+    res.status(200).json({ message: "Payment status updated successfully", payment });
+  } catch (error) {
+    console.error("Error updating payment status:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Fetch payment history for a student
 const fetchStudentPayments = async (req, res) => {
   try {
@@ -49,4 +76,4 @@ const fetchAllPayments = async (req, res) => {
   }
 };
 
-module.exports = { createPayment, fetchStudentPayments, fetchAllPayments };
+module.exports = { createPayment, fetchStudentPayments, fetchAllPayments, updatePaymentStatus };
