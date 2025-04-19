@@ -15,9 +15,21 @@ const fetchAllCourses = async (req, res) => {
 
   const fetchPurchasedCourses = async (req, res) => {
     try {
-      const userId = req.user.id; // Get the logged-in user's ID from the request
+      const userId = req.user.id; // Get the logged-in user's ID
       const courses = await Course.find({ enrolledUsers: userId }).populate('createdBy', 'firstName lastName'); // Fetch courses where the user is enrolled
-      res.json(courses);
+  
+      // Add progressPercentage and rating for each course
+      const coursesWithProgress = courses.map((course) => {
+        const userProgress = course.progress.find((p) => p.userId.toString() === userId);
+        const progressPercentage = userProgress ? userProgress.progressPercentage : 0;
+        return {
+          ...course.toObject(),
+          progressPercentage, // Include progress percentage
+          rating: course.rating || 0, // Include rating
+        };
+      });
+  
+      res.json(coursesWithProgress);
     } catch (error) {
       console.error('Error fetching purchased courses:', error);
       res.status(500).json({ error: error.message });
@@ -26,10 +38,9 @@ const fetchAllCourses = async (req, res) => {
 
   const updatePurchasedCourses = async (req, res) => {
     try {
-      const userId = req.user.id; // Get the logged-in user's ID
-      const { cartItems } = req.body; // Get the purchased courses from the request body
-  
-      // Update the enrolledUsers field for each purchased course
+      const userId = req.user.id; 
+      const { cartItems } = req.body;
+      
       const updatePromises = cartItems.map((item) =>
         Course.findByIdAndUpdate(item.id, { $addToSet: { enrolledUsers: userId } })
       );
@@ -327,56 +338,6 @@ const fetchAllCourses = async (req, res) => {
     }
   };
 
-  // const updateLessonProgress = async (req, res) => {
-  //   try {
-  //     const { courseId } = req.params;
-  //     const { lessonId } = req.body; // Lesson ID to mark as completed
-  //     const userId = req.user.id;
-  
-  //     const course = await Course.findById(courseId);
-  //     if (!course) {
-  //       return res.status(404).json({ message: "Course not found" });
-  //     }
-  
-  //     // Ensure the user is enrolled in the course
-  //     if (!course.enrolledUsers.includes(userId)) {
-  //       return res.status(403).json({ message: "You are not enrolled in this course" });
-  //     }
-  
-  //     // Find or create the user's progress record
-  //     let userProgress = course.progress.find((p) => p.userId.toString() === userId);
-  //     if (!userProgress) {
-  //       userProgress = {
-  //         userId,
-  //         completedLessons: [],
-  //         progressPercentage: 0,
-  //       };
-  //       course.progress.push(userProgress);
-  //     }
-  
-  //     // Mark the lesson as completed
-  //     if (!userProgress.completedLessons.includes(lessonId)) {
-  //       userProgress.completedLessons.push(lessonId);
-  //     }
-  
-  //     // Calculate the progress percentage
-  //     const totalLessons = course.chapters.reduce(
-  //       (total, chapter) => total + chapter.lessons.length,
-  //       0
-  //     );
-  //     userProgress.progressPercentage = ((userProgress.completedLessons.length / totalLessons) * 100).toFixed(2);
-  
-  //     await course.save();
-  
-  //     res.status(200).json({
-  //       message: "Lesson progress updated successfully",
-  //       progress: userProgress,
-  //     });
-  //   } catch (error) {
-  //     console.error("Error updating lesson progress:", error);
-  //     res.status(500).json({ error: error.message });
-  //   }
-  // };
 
   const updateLessonProgress = async (req, res) => {
     try {
