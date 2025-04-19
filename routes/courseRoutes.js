@@ -48,4 +48,6 @@ courseRouter.post('/add', authenticate, authorize('Admin', 'Instructor'), course
 //  POST /api/courses/approve/:id
 courseRouter.post('/approve/:id', authenticate, authorize('Admin'), courseController.approveCourses);
 
+courseRouter.post('/:courseId/progress', authenticate, courseController.updateLessonProgress);
+
 module.exports = courseRouter;

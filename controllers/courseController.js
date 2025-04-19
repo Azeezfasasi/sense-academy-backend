@@ -52,73 +52,7 @@ const fetchAllCourses = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
   };
-  
-  // const addNewCourse = async (req, res) => {
-  //   try {
-  //     console.log('Request Body:', req.body);
-  
-  //     const { 
-  //       title, 
-  //       subTitle, 
-  //       description, 
-  //       category, 
-  //       duration, 
-  //       video, 
-  //       rating,
-  //       regularPrice, 
-  //       discountedPrice, 
-  //       level, 
-  //       language, 
-  //       introVideo,
-  //       material, 
-  //       chapters,
-  //     } = req.body;
 
-  //     let parsedChapters = [];
-  //     try {
-  //       parsedChapters = chapters ? JSON.parse(chapters) : [];
-  //     } catch (error) {
-  //       console.error('Error parsing chapters:', error);
-  //       return res.status(400).json({ message: 'Invalid chapters format' });
-  //     }
-  
-  //     const instructorId = req.user.id; // Get the authenticated user's ID
-
-  //     // Upload introImage to Cloudinary
-  //     let introImageUrl = '';
-  //     if (req.file) {
-  //       const result = await cloudinary.uploader.upload(req.file.path, {
-  //         folder: 'courses',
-  //       });
-  //       introImageUrl = result.secure_url; // Get the Cloudinary URL
-  //     }
-  
-  //     const course = new Course({
-  //       title,
-  //       subTitle,
-  //       description,
-  //       category,
-  //       duration,
-  //       video,
-  //       regularPrice,
-  //       discountedPrice,
-  //       level,
-  //       rating,
-  //       language,
-  //       introVideo,
-  //       introImage: introImageUrl,
-  //       material,
-  //       chapter: parsedChapters,
-  //       createdBy: instructorId, // Set the createdBy field
-  //     });
-  
-  //     await course.save();
-  //     res.status(201).json({ message: 'Course created successfully', course });
-  //   } catch (error) {
-  //     console.error('Error creating course:', error);
-  //     res.status(500).json({ error: error.message });
-  //   }
-  // };
   const addNewCourse = async (req, res) => {
     try {
       console.log('Request Body:', req.body);
@@ -392,6 +326,33 @@ const fetchAllCourses = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
   };
+
+  const updateLessonProgress = async (req, res) => {
+    try {
+      const { courseId } = req.params;
+      const { chapterIndex, lessonIndex } = req.body;
+      const userId = req.user.id;
+  
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return res.status(404).json({ message: 'Course not found' });
+      }
+  
+      // Ensure the user is enrolled in the course
+      if (!course.enrolledUsers.includes(userId)) {
+        return res.status(403).json({ message: 'You are not enrolled in this course' });
+      }
+  
+      // Update progress (this can be stored in a separate collection or field)
+      // For simplicity, we'll just log the progress here
+      console.log(`User ${userId} completed lesson ${lessonIndex} in chapter ${chapterIndex}`);
+  
+      res.status(200).json({ message: 'Lesson progress updated successfully' });
+    } catch (error) {
+      console.error('Error updating lesson progress:', error);
+      res.status(500).json({ error: error.message });
+    }
+  };
   
   
-  module.exports = {fetchAllCourses, fetchPurchasedCourses, updatePurchasedCourses, fetchCoursesByInstructor, addNewCourse, editCourses, editCoursesByInstructor, deleteCourses, deleteCoursesByInstructor, assignCourseToUsers, changeCourseStatus, viewEnrolledUsers, approveCourses, };
+  module.exports = {fetchAllCourses, fetchPurchasedCourses, updatePurchasedCourses, fetchCoursesByInstructor, addNewCourse, editCourses, editCoursesByInstructor, deleteCourses, deleteCoursesByInstructor, assignCourseToUsers, changeCourseStatus, viewEnrolledUsers, approveCourses, updateLessonProgress, };

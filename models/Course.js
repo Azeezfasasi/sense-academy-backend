@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
 
 const lessonSchema = new mongoose.Schema({
-  // title: { type: String, required: true },
-  // duration: { type: String },
-  // videoLink: { type: String },
   title: { type: String, required: true },
   duration: { type: String, required: true },
   videoLink: { type: String, required: false },
