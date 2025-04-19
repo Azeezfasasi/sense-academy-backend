@@ -52,34 +52,82 @@ const fetchAllCourses = async (req, res) => {
     }
   };
   
+  // const addNewCourse = async (req, res) => {
+  //   try {
+  //     console.log('Request Body:', req.body);
+  //     const { title, subTitle, description, category, duration, video, regularPrice, discountedPrice, level, language, introVideo, introImage, material, chapters } = req.body;
+  //      //  get user id from req.user
+  //     const instructorId = req.user.id;
+  //     const course = new Course({
+  //         title,
+  //         subTitle,
+  //         description,
+  //         category,
+  //         duration,
+  //         video,
+  //         regularPrice,
+  //         discountedPrice,
+  //         level,
+  //         language,
+  //         introVideo,
+  //         introImage: introImage.path || introImage,
+  //         material,
+  //         chapters,
+  //         createdBy: instructorId,
+  //     });
+  //     await course.save();
+  //     res.status(201).json({ message: 'Course created successfully', course });
+  // } catch (error) {
+  //     res.status(500).json({ error: error.message });
+  // }
+  // };
   const addNewCourse = async (req, res) => {
     try {
-      const { title, subTitle, description, category, duration, video, regularPrice, discountedPrice, level, rating, language, introVideo, introImage, material, chapters } = req.body;
-       //  get user id from req.user
-      const instructorId = req.user.id;
+      console.log('Request Body:', req.body);
+  
+      const { 
+        title, 
+        subTitle, 
+        description, 
+        category, 
+        duration, 
+        video, 
+        regularPrice, 
+        discountedPrice, 
+        level, 
+        language, 
+        introVideo, 
+        introImage, 
+        material, 
+        chapters 
+      } = req.body;
+  
+      const instructorId = req.user.id; // Get the authenticated user's ID
+  
       const course = new Course({
-          title,
-          subTitle,
-          description,
-          category,
-          duration,
-          video,
-          regularPrice,
-          discountedPrice,
-          level,
-          rating,
-          language,
-          introVideo,
-          introImage,
-          material,
-          chapters,
-          createdBy: instructorId,
+        title,
+        subTitle,
+        description,
+        category,
+        duration,
+        video,
+        regularPrice,
+        discountedPrice,
+        level,
+        language,
+        introVideo,
+        introImage: introImage.path || introImage, // Handle introImage as a string
+        material,
+        chapters,
+        createdBy: instructorId, // Set the createdBy field
       });
+  
       await course.save();
       res.status(201).json({ message: 'Course created successfully', course });
-  } catch (error) {
+    } catch (error) {
+      console.error('Error creating course:', error);
       res.status(500).json({ error: error.message });
-  }
+    }
   };
   
   const editCourses = async (req, res) => {
