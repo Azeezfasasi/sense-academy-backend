@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Course = require("../models/Course");
+const cloudinary = require('../config/cloudinaryConfig');
 
 const fetchAllCourses = async (req, res) => {
       try {
@@ -55,31 +56,68 @@ const fetchAllCourses = async (req, res) => {
   // const addNewCourse = async (req, res) => {
   //   try {
   //     console.log('Request Body:', req.body);
-  //     const { title, subTitle, description, category, duration, video, regularPrice, discountedPrice, level, language, introVideo, introImage, material, chapters } = req.body;
-  //      //  get user id from req.user
-  //     const instructorId = req.user.id;
+  
+  //     const { 
+  //       title, 
+  //       subTitle, 
+  //       description, 
+  //       category, 
+  //       duration, 
+  //       video, 
+  //       rating,
+  //       regularPrice, 
+  //       discountedPrice, 
+  //       level, 
+  //       language, 
+  //       introVideo,
+  //       material, 
+  //       chapters,
+  //     } = req.body;
+
+  //     let parsedChapters = [];
+  //     try {
+  //       parsedChapters = chapters ? JSON.parse(chapters) : [];
+  //     } catch (error) {
+  //       console.error('Error parsing chapters:', error);
+  //       return res.status(400).json({ message: 'Invalid chapters format' });
+  //     }
+  
+  //     const instructorId = req.user.id; // Get the authenticated user's ID
+
+  //     // Upload introImage to Cloudinary
+  //     let introImageUrl = '';
+  //     if (req.file) {
+  //       const result = await cloudinary.uploader.upload(req.file.path, {
+  //         folder: 'courses',
+  //       });
+  //       introImageUrl = result.secure_url; // Get the Cloudinary URL
+  //     }
+  
   //     const course = new Course({
-  //         title,
-  //         subTitle,
-  //         description,
-  //         category,
-  //         duration,
-  //         video,
-  //         regularPrice,
-  //         discountedPrice,
-  //         level,
-  //         language,
-  //         introVideo,
-  //         introImage: introImage.path || introImage,
-  //         material,
-  //         chapters,
-  //         createdBy: instructorId,
+  //       title,
+  //       subTitle,
+  //       description,
+  //       category,
+  //       duration,
+  //       video,
+  //       regularPrice,
+  //       discountedPrice,
+  //       level,
+  //       rating,
+  //       language,
+  //       introVideo,
+  //       introImage: introImageUrl,
+  //       material,
+  //       chapter: parsedChapters,
+  //       createdBy: instructorId, // Set the createdBy field
   //     });
+  
   //     await course.save();
   //     res.status(201).json({ message: 'Course created successfully', course });
-  // } catch (error) {
+  //   } catch (error) {
+  //     console.error('Error creating course:', error);
   //     res.status(500).json({ error: error.message });
-  // }
+  //   }
   // };
   const addNewCourse = async (req, res) => {
     try {
@@ -96,13 +134,30 @@ const fetchAllCourses = async (req, res) => {
         discountedPrice, 
         level, 
         language, 
-        introVideo, 
-        introImage, 
+        introVideo,
         material, 
-        chapters 
+        chapters, // This will be a stringified JSON
       } = req.body;
   
+      // Parse the chapters field from a string to an array
+      let parsedChapters = [];
+      try {
+        parsedChapters = chapters ? JSON.parse(chapters) : [];
+      } catch (error) {
+        console.error('Error parsing chapters:', error);
+        return res.status(400).json({ message: 'Invalid chapters format' });
+      }
+  
       const instructorId = req.user.id; // Get the authenticated user's ID
+  
+      // Upload introImage to Cloudinary
+      let introImageUrl = '';
+      if (req.file) {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'courses',
+        });
+        introImageUrl = result.secure_url; // Get the Cloudinary URL
+      }
   
       const course = new Course({
         title,
@@ -116,9 +171,9 @@ const fetchAllCourses = async (req, res) => {
         level,
         language,
         introVideo,
-        introImage: introImage.path || introImage, // Handle introImage as a string
+        introImage: introImageUrl,
         material,
-        chapters,
+        chapters: parsedChapters, // Save the parsed chapters
         createdBy: instructorId, // Set the createdBy field
       });
   
@@ -131,20 +186,75 @@ const fetchAllCourses = async (req, res) => {
   };
   
   const editCourses = async (req, res) => {
-      try {
-        const { id } = req.params;
-        const { title, subTitle, description, category, duration, video, regularPrice, discountedPrice, level, rating, language, introVideo, introImage, material, chapters } = req.body;
-        const updatedCourse = await Course.findByIdAndUpdate(
-            id,
-            { title, subTitle, description, category, duration, video, regularPrice, discountedPrice, level, rating, language, introVideo, introImage, material, chapters },
-            { new: true }
-        );
-        if (!updatedCourse) {
-            return res.status(404).json({ message: 'Course not found' });
-        }
-        res.json(updatedCourse);
+    try {
+      const { id } = req.params;
+      const {
+        title,
+        subTitle,
+        description,
+        category,
+        duration,
+        video,
+        regularPrice,
+        discountedPrice,
+        level,
+        rating,
+        language,
+        introVideo,
+        material,
+        chapters, // This might be a stringified JSON
+      } = req.body;
+  
+      // Parse the chapters field from a string to an array if it exists
+      const parsedChapters = chapters ? JSON.parse(chapters) : undefined;
+  
+      // Handle introImage upload to Cloudinary if a new file is provided
+      let introImageUrl = undefined;
+      if (req.file) {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: 'courses',
+        });
+        introImageUrl = result.secure_url; // Get the Cloudinary URL
+      }
+  
+      // Build the update object dynamically
+      const updateData = {
+        title,
+        subTitle,
+        description,
+        category,
+        duration,
+        video,
+        regularPrice,
+        discountedPrice,
+        level,
+        rating,
+        language,
+        introVideo,
+        material,
+      };
+  
+      // Add parsed chapters if provided
+      if (parsedChapters) {
+        updateData.chapters = parsedChapters;
+      }
+  
+      // Add introImage URL if a new image was uploaded
+      if (introImageUrl) {
+        updateData.introImage = introImageUrl;
+      }
+  
+      // Update the course in the database
+      const updatedCourse = await Course.findByIdAndUpdate(id, updateData, { new: true });
+  
+      if (!updatedCourse) {
+        return res.status(404).json({ message: 'Course not found' });
+      }
+  
+      res.json({ message: 'Course updated successfully', course: updatedCourse });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      console.error('Error updating course:', error);
+      res.status(500).json({ error: error.message });
     }
   };
 

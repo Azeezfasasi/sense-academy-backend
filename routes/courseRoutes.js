@@ -1,8 +1,13 @@
 const express = require('express');
 const courseRouter = express.Router();
 const courseController = require('../controllers/courseController');
+const upload = require('../middlewares/uploadMiddleware');
 const { authenticate } = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/roleMiddleware');
+
+courseRouter.post('/add', authenticate, authorize('Admin', 'Instructor'), upload.single('introImage'), courseController.addNewCourse);
+
+courseRouter.put('/:id', authenticate, authorize('Admin'), upload.single('introImage'), courseController.editCourses);
 
 //  GET /api/courses
 courseRouter.get('/', courseController.fetchAllCourses);

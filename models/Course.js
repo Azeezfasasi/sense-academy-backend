@@ -1,9 +1,12 @@
 const mongoose = require("mongoose");
 
 const lessonSchema = new mongoose.Schema({
+  // title: { type: String, required: true },
+  // duration: { type: String },
+  // videoLink: { type: String },
   title: { type: String, required: true },
-  duration: { type: String },
-  videoLink: { type: String },
+  duration: { type: String, required: true },
+  videoLink: { type: String, required: false },
 });
 
 const chapterSchema = new mongoose.Schema({
@@ -13,14 +16,14 @@ const chapterSchema = new mongoose.Schema({
 
 const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
-  subTitle: { type: String },
-  description: { type: String },
-  category: { type: String },
-  duration: { type: String },
+  subTitle: { type: String, required: true },
+  description: { type: String, required: true },
+  category: { type: String, required: true },
+  duration: { type: String, required: true },
   video: { type: String },
   regularPrice: { type: Number, required: true },
   discountedPrice: { type: Number },
-  level: { type: String, enum: ['Beginner', 'Intermediate', 'Advanced'] },
+  level: { type: String, enum: ["Beginner", "Intermediate", "Advanced"], required: true },
   language: { type: String },
   introVideo: { type: String },
   introImage: { type: String },
