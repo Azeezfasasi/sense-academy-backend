@@ -50,4 +50,6 @@ courseRouter.post('/approve/:id', authenticate, authorize('Admin'), courseContro
 
 courseRouter.post('/:courseId/progress', authenticate, courseController.updateLessonProgress);
 
+courseRouter.get('/:courseId/progress', authenticate, courseController.getUserProgress);
+
 module.exports = courseRouter;

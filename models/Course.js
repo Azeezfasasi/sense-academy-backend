@@ -11,6 +11,12 @@ const chapterSchema = new mongoose.Schema({
   lessons: [lessonSchema],
 });
 
+const progressSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: "Profile", required: true },
+  completedLessons: [{ type: String }], // Store lesson IDs as strings
+  progressPercentage: { type: Number, default: 0 }, // Store progress percentage
+});
+
 const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
   subTitle: { type: String, required: true },
@@ -29,6 +35,7 @@ const courseSchema = new mongoose.Schema({
   chapters: [chapterSchema],
   status: { type: String, enum: ["Pending", "Approved", "Published", "Rejected"], default: "Pending" },
   enrolledUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
+  progress: [progressSchema], // Track progress for each user
 }, { timestamps: true });
 
 module.exports = mongoose.model("Course", courseSchema);

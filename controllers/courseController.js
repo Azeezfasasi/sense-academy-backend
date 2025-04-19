@@ -327,32 +327,129 @@ const fetchAllCourses = async (req, res) => {
     }
   };
 
+  // const updateLessonProgress = async (req, res) => {
+  //   try {
+  //     const { courseId } = req.params;
+  //     const { lessonId } = req.body; // Lesson ID to mark as completed
+  //     const userId = req.user.id;
+  
+  //     const course = await Course.findById(courseId);
+  //     if (!course) {
+  //       return res.status(404).json({ message: "Course not found" });
+  //     }
+  
+  //     // Ensure the user is enrolled in the course
+  //     if (!course.enrolledUsers.includes(userId)) {
+  //       return res.status(403).json({ message: "You are not enrolled in this course" });
+  //     }
+  
+  //     // Find or create the user's progress record
+  //     let userProgress = course.progress.find((p) => p.userId.toString() === userId);
+  //     if (!userProgress) {
+  //       userProgress = {
+  //         userId,
+  //         completedLessons: [],
+  //         progressPercentage: 0,
+  //       };
+  //       course.progress.push(userProgress);
+  //     }
+  
+  //     // Mark the lesson as completed
+  //     if (!userProgress.completedLessons.includes(lessonId)) {
+  //       userProgress.completedLessons.push(lessonId);
+  //     }
+  
+  //     // Calculate the progress percentage
+  //     const totalLessons = course.chapters.reduce(
+  //       (total, chapter) => total + chapter.lessons.length,
+  //       0
+  //     );
+  //     userProgress.progressPercentage = ((userProgress.completedLessons.length / totalLessons) * 100).toFixed(2);
+  
+  //     await course.save();
+  
+  //     res.status(200).json({
+  //       message: "Lesson progress updated successfully",
+  //       progress: userProgress,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error updating lesson progress:", error);
+  //     res.status(500).json({ error: error.message });
+  //   }
+  // };
+
   const updateLessonProgress = async (req, res) => {
     try {
       const { courseId } = req.params;
-      const { chapterIndex, lessonIndex } = req.body;
+      const { lessonId } = req.body; // Lesson ID to mark as completed
       const userId = req.user.id;
   
       const course = await Course.findById(courseId);
       if (!course) {
-        return res.status(404).json({ message: 'Course not found' });
+        return res.status(404).json({ message: "Course not found" });
       }
   
       // Ensure the user is enrolled in the course
       if (!course.enrolledUsers.includes(userId)) {
-        return res.status(403).json({ message: 'You are not enrolled in this course' });
+        return res.status(403).json({ message: "You are not enrolled in this course" });
       }
   
-      // Update progress (this can be stored in a separate collection or field)
-      // For simplicity, we'll just log the progress here
-      console.log(`User ${userId} completed lesson ${lessonIndex} in chapter ${chapterIndex}`);
+      // Find or create the user's progress record
+      let userProgress = course.progress.find((p) => p.userId.toString() === userId);
+      if (!userProgress) {
+        userProgress = {
+          userId,
+          completedLessons: [],
+          progressPercentage: 0,
+        };
+        course.progress.push(userProgress);
+      }
   
-      res.status(200).json({ message: 'Lesson progress updated successfully' });
+      // Mark the lesson as completed
+      if (!userProgress.completedLessons.includes(lessonId)) {
+        userProgress.completedLessons.push(lessonId);
+      }
+  
+      // Calculate the progress percentage
+      const totalLessons = course.chapters.reduce(
+        (total, chapter) => total + chapter.lessons.length,
+        0
+      );
+      userProgress.progressPercentage = ((userProgress.completedLessons.length / totalLessons) * 100).toFixed(2);
+  
+      await course.save();
+  
+      res.status(200).json({
+        message: "Lesson progress updated successfully",
+        progress: userProgress,
+      });
     } catch (error) {
-      console.error('Error updating lesson progress:', error);
+      console.error("Error updating lesson progress:", error);
       res.status(500).json({ error: error.message });
     }
   };
+
+  const getUserProgress = async (req, res) => {
+    try {
+      const { courseId } = req.params;
+      const userId = req.user.id;
   
+      const course = await Course.findById(courseId);
+      if (!course) {
+        return res.status(404).json({ message: "Course not found" });
+      }
   
-  module.exports = {fetchAllCourses, fetchPurchasedCourses, updatePurchasedCourses, fetchCoursesByInstructor, addNewCourse, editCourses, editCoursesByInstructor, deleteCourses, deleteCoursesByInstructor, assignCourseToUsers, changeCourseStatus, viewEnrolledUsers, approveCourses, updateLessonProgress, };
+      // Find the user's progress
+      const userProgress = course.progress.find((p) => p.userId.toString() === userId);
+      if (!userProgress) {
+        return res.status(404).json({ message: "No progress found for this user" });
+      }
+  
+      res.status(200).json(userProgress);
+    } catch (error) {
+      console.error("Error fetching user progress:", error);
+      res.status(500).json({ error: error.message });
+    }
+  };  
+  
+  module.exports = {fetchAllCourses, fetchPurchasedCourses, updatePurchasedCourses, fetchCoursesByInstructor, addNewCourse, editCourses, editCoursesByInstructor, deleteCourses, deleteCoursesByInstructor, assignCourseToUsers, changeCourseStatus, viewEnrolledUsers, approveCourses, updateLessonProgress, getUserProgress };
