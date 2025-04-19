@@ -9,7 +9,9 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 profileRouter.put('/me', authenticate, upload.single('profileImage'), profileController.editCurrentUser);
+
 profileRouter.post('/upload/image', authenticate, upload.single('image'), profileController.uploadImage);
+
 profileRouter.post('/upload/video', authenticate, upload.single('video'), profileController.uploadVideo);
 
 // POST /api/profile/register

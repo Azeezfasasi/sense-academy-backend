@@ -5,12 +5,13 @@ const dotenv = require('dotenv');
 const Profile = require('./models/Profile');
 require('dotenv').config();
 const bcrypt = require('bcryptjs');
-
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
+app.use(cookieParser()); // Enable cookie-parser middleware
 app.use(cors({
   origin: [
     'https://sense-academy.netlify.app', // Hosted frontend
@@ -19,6 +20,7 @@ app.use(cors({
   credentials: true, // Allow sending cookies, authorization headers, etc.
   allowedHeaders: ['Authorization', 'Content-Type'], // Specify allowed headers
 }));
+
 
 // Routes
 const profileRoutes = require('./routes/profileRoutes');
