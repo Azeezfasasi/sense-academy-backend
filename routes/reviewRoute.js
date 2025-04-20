@@ -4,11 +4,19 @@ const reviewController = require('../controllers/reviewController');
 const { authenticate } = require('../middlewares/authMiddleware');
 const authorize = require('../middlewares/roleMiddleware');
 
-// POST
-reviewRouter.post('/api/courses/:courseId/reviews', authenticate, reviewController.addReview);
-reviewRouter.put('/api/courses/:courseId/reviews/:reviewId', authenticate, reviewController.editReview);
-reviewRouter.delete('/api/courses/:courseId/reviews/:reviewId', authenticate, reviewController.deleteReview);
-reviewRouter.put('/api/courses/:courseId/reviews/:reviewId/approve', authenticate, authorize('Admin'), reviewController.approveReview);
-reviewRouter.get('/api/courses/:courseId/reviews', reviewController.getCourseReviews); //get approved reviews for a course
+// GET /api/reviews/courses/:courseId/reviews
+reviewRouter.get('/courses/:courseId/reviews', reviewController.getCourseReviews);
+
+// POST /api/reviews/courses/:courseId/reviews
+reviewRouter.post('/courses/:courseId/reviews', authenticate, reviewController.addReview);
+
+// PUT /api/reviews/courses/:courseId/reviews/:reviewId
+reviewRouter.put('/courses/:courseId/reviews/:reviewId', authenticate, authorize('Admin'), reviewController.editReview);
+
+// DELETE /api/reviews/courses/:courseId/reviews/:reviewId
+reviewRouter.delete('/courses/:courseId/reviews/:reviewId', authenticate, authorize('Admin'), reviewController.deleteReview);
+
+// PUT /api/reviews/courses/:courseId/reviews/:reviewId/approve
+reviewRouter.put('/courses/:courseId/reviews/:reviewId/approve', authenticate, authorize('Admin'), reviewController.approveReview);
 
 module.exports = reviewRouter;

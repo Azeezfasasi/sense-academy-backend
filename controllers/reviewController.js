@@ -1,6 +1,9 @@
+const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Cart = require("../models/Review");
+const Review= require("../models/Review");
+const Course = require('../models/Course');
+
 
 const addReview = async (req, res) => {
       try {
@@ -13,13 +16,20 @@ const addReview = async (req, res) => {
         }
         // In a real application, you might want to check if the user is enrolled in the course
 
-        const newReview = {
+        // const newReview = {
+        //     user: userId,
+        //     rating,
+        //     review,
+        //     approved: false, // Initial status, needs admin approval
+        // };
+        const newReview = new Review({
             user: userId,
+            course: courseId,
             rating,
-            review,
-            approved: false, // Initial status, needs admin approval
-        };
-
+            comment: review
+          });
+          await newReview.save();
+          
         course.reviews = course.reviews || [];  // Initialize if undefined
         course.reviews.push(newReview);
         await course.save();
@@ -106,20 +116,21 @@ const addReview = async (req, res) => {
     }
   };
 
-  const getCourseReviews = async (req, res) => {
+const getCourseReviews = async (req, res) => {
     try {
-        const { courseId } = req.params;
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return res.status(404).json({ message: 'Course not found' });
-        }
-        // Filter only approved reviews and populate user details
-        const approvedReviews = course.reviews.filter(review => review.approved);
-        await Course.populate(approvedReviews, { path: 'user', select: 'firstName lastName' });  // Populate user
-        res.json(approvedReviews);
+      const courseId = req.params.courseId;
+  
+      if (!mongoose.Types.ObjectId.isValid(courseId)) {
+        return res.status(400).json({ error: 'Invalid course ID' });
+      }
+  
+      const reviews = await Review.find({ course: courseId });
+      res.status(200).json(reviews);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      console.error('Error fetching course reviews:', error.message);
+      res.status(500).json({ error: 'Server error' });
     }
-}
+  };
+  
   
   module.exports = { addReview, editReview, deleteReview, approveReview, getCourseReviews };
