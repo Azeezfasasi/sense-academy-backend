@@ -1,8 +1,6 @@
 const jwt = require("jsonwebtoken");
 
 const authenticate = (req, res, next) => {
-  console.log('Authorization header:', req.headers.authorization);
-
   const authHeader = req.headers.authorization;
   let token;
 
@@ -19,7 +17,7 @@ const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    console.log("Token decoded successfully:", decoded); // Added logging
+    // console.log("Token decoded successfully:", decoded); // Added logging
     req.user = decoded;
     next();
   } catch (error) {

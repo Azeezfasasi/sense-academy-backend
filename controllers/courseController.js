@@ -54,6 +54,11 @@ const fetchAllCourses = async (req, res) => {
 
   const fetchPurchasedCourses = async (req, res) => {
     try {
+      if (!req.user || !req.user.id) {
+        console.log('Error: req.user or req.user.id is missing!');
+        return res.status(400).json({ message: 'Invalid user information' });
+      }
+
       const userId = req.user.id; // Get the logged-in user's ID
       const courses = await Course.find({ enrolledUsers: userId }).populate('createdBy', 'firstName lastName'); // Fetch courses where the user is enrolled
   
