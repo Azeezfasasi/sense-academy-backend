@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Course = require("../models/Course");
@@ -10,6 +11,44 @@ const fetchAllCourses = async (req, res) => {
     } catch (error) {
         console.error('Error fetching courses:', error);
         res.status(500).json({ error: error.message });
+    }
+  };
+
+  const fetchCourseDetails = async (req, res) => {
+    try {
+      const { courseId } = req.params;
+        
+      // Validate courseId
+      if (!mongoose.Types.ObjectId.isValid(courseId)) {
+        return res.status(400).json({ message: 'Invalid course ID' });
+      }
+  
+      const course = await Course.findById(courseId)
+        .select('-progress') // Remove -enrolledUsers to include the array
+        .populate('createdBy', 'firstName lastName headline profileImage bio'); // Populate creator details
+  
+      if (!course) {
+        return res.status(404).json({ message: 'Course not found' });
+      }
+  
+      // Remove videoLink from lessons
+      const sanitizedChapters = course.chapters.map((chapter) => ({
+        ...chapter.toObject(),
+        lessons: chapter.lessons.map(({ _id, title, duration }) => ({
+          _id,
+          title,
+          duration,
+        })),
+      }));
+  
+      res.json({
+        ...course.toObject(),
+        chapters: sanitizedChapters,
+        creator: course.createdBy, // Include the creator data in the response
+      });
+    } catch (error) {
+      console.error('Error fetching course details:', error);
+      res.status(500).json({ error: error.message });
     }
   };
 
@@ -413,4 +452,4 @@ const fetchAllCourses = async (req, res) => {
     }
   };  
   
-  module.exports = {fetchAllCourses, fetchPurchasedCourses, updatePurchasedCourses, fetchCoursesByInstructor, addNewCourse, editCourses, editCoursesByInstructor, deleteCourses, deleteCoursesByInstructor, assignCourseToUsers, changeCourseStatus, viewEnrolledUsers, approveCourses, updateLessonProgress, getUserProgress };
+  module.exports = {fetchAllCourses, fetchCourseDetails, fetchPurchasedCourses, updatePurchasedCourses, fetchCoursesByInstructor, addNewCourse, editCourses, editCoursesByInstructor, deleteCourses, deleteCoursesByInstructor, assignCourseToUsers, changeCourseStatus, viewEnrolledUsers, approveCourses, updateLessonProgress, getUserProgress };

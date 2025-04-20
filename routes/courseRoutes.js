@@ -12,6 +12,9 @@ courseRouter.put('/:id', authenticate, authorize('Admin'), upload.single('introI
 //  GET /api/courses
 courseRouter.get('/', courseController.fetchAllCourses);
 
+// GET /api/courses/:courseId
+courseRouter.get('/:courseId', courseController.fetchCourseDetails);
+
 // GET /api/courses/purchased
 courseRouter.get('/purchased', authenticate, courseController.fetchPurchasedCourses);
 
