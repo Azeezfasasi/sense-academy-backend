@@ -7,6 +7,9 @@ const authorize = require('../middlewares/roleMiddleware');
 // POST /api/certificates/generate
 certificateRouter.post('/generate', authenticate, certificateController.generateCertificate);
 
+// GET /api/certificates/user
+certificateRouter.get('/user', authenticate, certificateController.getUserCertificates);
+
 // POST /api/certificates/verify/:link
 certificateRouter.post('/verify/:link', certificateController.verifyCertificate);
 

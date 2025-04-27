@@ -80,16 +80,57 @@ const fetchAllCourses = async (req, res) => {
     }
   };
 
+  // const updatePurchasedCourses = async (req, res) => {
+  //   try {
+  //     const userId = req.user.id; 
+  //     const { cartItems } = req.body;
+      
+  //     const updatePromises = cartItems.map((item) =>
+  //       Course.findByIdAndUpdate(item.id, { $addToSet: { enrolledUsers: userId } })
+  //     );
+  
+  //     await Promise.all(updatePromises);
+  
+  //     res.status(200).json({ message: 'Purchased courses updated successfully' });
+  //   } catch (error) {
+  //     console.error('Error updating purchased courses:', error);
+  //     res.status(500).json({ error: error.message });
+  //   }
+  // };
   const updatePurchasedCourses = async (req, res) => {
     try {
-      const userId = req.user.id; 
+      const userId = req.user.id;
       const { cartItems } = req.body;
-      
+  
       const updatePromises = cartItems.map((item) =>
         Course.findByIdAndUpdate(item.id, { $addToSet: { enrolledUsers: userId } })
       );
   
       await Promise.all(updatePromises);
+  
+      // Generate certificates for the purchased courses
+      const certificatePromises = cartItems.map(async (item) => {
+        const course = await Course.findById(item.id);
+        const user = await Profile.findById(userId);
+  
+        if (course && user) {
+          const certificate = new Certificate({
+            firstName: user.firstName,
+            lastName: user.lastName,
+            otherName: user.otherName,
+            courseTitle: course.title,
+            certificateDescription: `This is to certify that ${user.firstName} ${user.lastName} has successfully purchased the course: ${course.title}`,
+            issueDate: new Date(),
+            certificateSignature: 'Sense Academy Signature',
+            verifyLink: uuidv4(),
+            user: userId,
+          });
+  
+          await certificate.save();
+        }
+      });
+  
+      await Promise.all(certificatePromises);
   
       res.status(200).json({ message: 'Purchased courses updated successfully' });
     } catch (error) {
