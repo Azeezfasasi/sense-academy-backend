@@ -17,6 +17,7 @@ const progressSchema = new mongoose.Schema({
   progressPercentage: { type: Number, default: 0 },
 });
 
+
 const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
   subTitle: { type: String, required: true },
@@ -36,6 +37,18 @@ const courseSchema = new mongoose.Schema({
   status: { type: String, enum: ["Pending", "Approved", "Published", "Rejected"], default: "Pending" },
   enrolledUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Profile' }],
   progress: [progressSchema],
+  visibility: { type: String, enum: ["Public", "Private"], default: "Public" },
+  ratings: [{
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'Profile' },
+    rating: { type: Number, min: 1, max: 5 },
+    review: { type: String },
+    createdAt: { type: Date, default: Date.now }
+  }],
 }, { timestamps: true });
+
+// Add indexes
+courseSchema.index({ status: 1 });
+courseSchema.index({ createdBy: 1 });
+courseSchema.index({ "progress.userId": 1 });
 
 module.exports = mongoose.model("Course", courseSchema);
