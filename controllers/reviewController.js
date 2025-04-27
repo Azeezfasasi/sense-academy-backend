@@ -50,13 +50,14 @@ const addReview = async (req, res) => {
   const editReview = async (req, res) => {
     try {
       const { courseId, reviewId } = req.params;
-      const { rating, review: comment } = req.body; // Rename `review` from req.body to `comment`
+      const { rating, comment } = req.body;
   
       // Ensure req.user exists
       if (!req.user || !req.user.id) {
         return res.status(401).json({ message: 'User not authenticated' });
       }
       const userId = req.user.id;
+      const userRole = req.user.role; 
   
       // Validate courseId and reviewId
       if (!mongoose.Types.ObjectId.isValid(courseId) || !mongoose.Types.ObjectId.isValid(reviewId)) {
@@ -73,15 +74,15 @@ const addReview = async (req, res) => {
         return res.status(404).json({ message: 'Review not found' });
       }
   
-      // Only allow the user who wrote the review to edit it
-      if (review.user.toString() !== userId.toString()) {
+      // Allow admins to edit any review, but restrict regular users
+      if (userRole !== 'Admin' && review.user.toString() !== userId.toString()) {
         return res.status(403).json({ message: 'Unauthorized' });
       }
   
       // Update the review
       review.rating = rating;
-      review.comment = comment; // Use the renamed variable `comment`
-      review.edited = true; // Add edited flag
+      review.comment = comment;
+      review.edited = true; // Optional: Add an edited flag
       await review.save();
   
       res.json({ message: 'Review edited successfully', review });
@@ -92,27 +93,40 @@ const addReview = async (req, res) => {
   };
   
   const deleteReview = async (req, res) => {
-      try {
-        const { courseId, reviewId } = req.params;
-        //  get user id from req.user
-        const userId = req.user.id;
-        const course = await Course.findById(courseId);
-        if (!course) {
-            return res.status(404).json({ message: 'Course not found' });
-        }
-        const reviewIndex = course.reviews.findIndex(r => r._id.toString() === reviewId);
-        if (reviewIndex === -1) {
-            return res.status(404).json({ message: 'Review not found' });
-        }
-        // Only allow the user who wrote the review to delete it
-        if (course.reviews[reviewIndex].user.toString() !== userId.toString()) {
-            return res.status(403).json({ message: 'Unauthorized' });
-        }
-        course.reviews.splice(reviewIndex, 1);
-        await course.save();
-        res.json({ message: 'Review deleted successfully' });
+    try {
+      const { courseId, reviewId } = req.params;
+      const userId = req.user.id;
+      const userRole = req.user.role;
+  
+      const course = await Course.findById(courseId);
+      if (!course) {
+        console.log('Course not found');
+        return res.status(404).json({ message: 'Course not found' });
+      }
+  
+      const review = await Review.findById(reviewId);
+      if (!review) {
+        console.log('Review not found');
+        return res.status(404).json({ message: 'Review not found' });
+      }
+  
+      // Allow admins to delete any review, but restrict regular users
+      if (userRole !== 'Admin' && review.user.toString() !== userId.toString()) {
+        console.log('Unauthorized: User does not own the review');
+        return res.status(403).json({ message: 'Unauthorized' });
+      }
+  
+      // Remove the review reference from the course
+      course.reviews = course.reviews.filter((r) => r.toString() !== reviewId);
+      await course.save();
+  
+      // Delete the review document
+      await review.deleteOne();
+  
+      res.json({ message: 'Review deleted successfully' });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+      console.error('Error in deleteReview:', error.message);
+      res.status(500).json({ error: error.message });
     }
   };
   
@@ -159,13 +173,26 @@ const getCourseReviews = async (req, res) => {
         return res.status(401).json({ message: 'User not authenticated' });
       }
   
-      const reviews = await Review.find({ user: req.user.id }).populate('course', 'title_id');
+      // Populate the course field with the title and _id
+      const reviews = await Review.find({ user: req.user.id }).populate('course', 'title _id');
+      // console.log('Fetched User Reviews:', reviews);
+
       res.status(200).json(reviews);
     } catch (error) {
       console.error('Error fetching user reviews:', error.message);
       res.status(500).json({ error: 'Server error' });
     }
   };
+
+  const getAllReviews = async (req, res) => {
+    try {
+      const reviews = await Review.find().populate('course', 'title').populate('user', 'firstName lastName');
+      res.status(200).json(reviews);
+    } catch (error) {
+      console.error('Error fetching all reviews:', error.message);
+      res.status(500).json({ error: 'Server error' });
+    }
+  };
   
   
-  module.exports = { addReview, editReview, deleteReview, approveReview, getCourseReviews, getUserReviews, };
+  module.exports = { addReview, editReview, deleteReview, approveReview, getCourseReviews, getUserReviews, getAllReviews, };

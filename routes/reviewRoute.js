@@ -22,4 +22,7 @@ reviewRouter.delete('/courses/:courseId/reviews/:reviewId', authenticate, author
 // PUT /api/reviews/courses/:courseId/reviews/:reviewId/approve
 reviewRouter.put('/courses/:courseId/reviews/:reviewId/approve', authenticate, authorize('Admin'), reviewController.approveReview);
 
+// GET /api/reviews/courses/all
+reviewRouter.get('/courses/all', authenticate, authorize('Admin'), reviewController.getAllReviews);
+
 module.exports = reviewRouter;

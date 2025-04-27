@@ -22,6 +22,7 @@ const courseSchema = new mongoose.Schema({
   title: { type: String, required: true },
   subTitle: { type: String, required: true },
   description: { type: String, required: true },
+  reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
   category: { type: String, required: true },
   duration: { type: String, required: true },
   video: { type: String },
