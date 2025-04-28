@@ -13,68 +13,6 @@ const getUserCertificates = async (req, res) => {
   }
 };
 
-// const generateCertificate = async (req, res) => {
-//   try {
-//     const { userId, courseId } = req.body;
-//     console.log('Request Body:', { userId, courseId });
-
-//     const user = await Profile.findById(userId);
-//     const course = await Course.findById(courseId).populate('progress.userId');
-//     // Debugging logs for fetched data
-//     console.log('Fetched User:', user);
-//     console.log('Fetched Course:', course);
-
-//     if (!user || !course) {
-//       return res.status(404).json({ message: 'User or Course not found' });
-//     }
-
-//     // Check if the user has purchased the course
-//     console.log('Enrolled Users:', course.enrolledUsers);
-//     // Check if the user has purchased the course
-//     // if (!course.enrolledUsers.includes(userId)) {
-//     //   return res.status(403).json({ message: 'User has not purchased this course' });
-//     // }
-//     if (!course.enrolledUsers.some((user) => user.toString() === userId)) {
-//       return res.status(403).json({ message: 'User has not purchased this course' });
-//     }
-
-//     // Check if the user has completed the course
-//     const userProgress = course.progress.find((p) => p.userId.toString() === userId);
-//     console.log('User Progress:', userProgress);
-
-//     if (!userProgress || userProgress.progressPercentage < 70) {
-//       return res.status(403).json({ message: 'User has not completed this course' });
-//     }
-
-//     const certificate = new Certificate({
-//       firstName: user.firstName,
-//       lastName: user.lastName,
-//       otherName: user.otherName,
-//       courseTitle: course.title,
-//       certificateDescription: `This is to certify that ${user.firstName} ${user.lastName} has successfully completed the course: ${course.title}`,
-//       issueDate: new Date(),
-//       certificateSignature: 'Sense Academy Signature',
-//       verifyLink: uuidv4(),
-//       user: userId,
-//     });
-
-//     // Debugging log for certificate data
-//     console.log('Certificate Data:', certificate);
-
-//     await certificate.save();
-
-//     // Send email with the certificate verification link
-//     const emailHtml = `
-//       <p>Your certificate is ready. Here is the verification link:</p>
-//       <a href="http://yourdomain.com/api/certificates/verify/${certificate.verifyLink}">${certificate.verifyLink}</a>
-//     `;
-//     await sendEmail(user.email, 'Your Certificate is Ready', emailHtml);
-
-//     res.status(201).json({ message: 'Certificate generated successfully', certificate });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// };
 const generateCertificate = async (req, res) => {
   try {
     const { userId, courseId } = req.body;
